@@ -1,12 +1,9 @@
 {
-  "name": "rollup-starter-lib",
+  "name": "webusb-receipt-printer",
   "version": "1.0.0",
-  "main": "dist/how-long-till-lunch.cjs.js",
-  "module": "dist/how-long-till-lunch.esm.js",
-  "browser": "dist/how-long-till-lunch.umd.js",
-  "dependencies": {
-    "ms": "^2.0.0"
-  },
+  "main": "dist/webusb-receipt-printer.cjs.js",
+  "module": "dist/webusb-receipt-printer.esm.js",
+  "browser": "dist/webusb-receipt-printer.umd.js",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^11.0.1",
     "@rollup/plugin-node-resolve": "^7.0.0",
@@ -14,9 +11,7 @@
   },
   "scripts": {
     "build": "rollup -c",
-    "dev": "rollup -c -w",
-    "test": "node test/test.js",
-    "pretest": "npm run build"
+    "dev": "rollup -c -w"
   },
   "files": [
     "dist"

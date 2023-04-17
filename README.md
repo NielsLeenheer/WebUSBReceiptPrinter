@@ -1,46 +1,107 @@
-# rollup-starter-lib
+# webusb-receipt-printer
 
-[![Greenkeeper badge](https://badges.greenkeeper.io/rollup/rollup-starter-lib.svg)](https://greenkeeper.io/)
+This is an library that allows you to print to a USB connected receipt printer using WebUSB.
 
-This repo contains a bare-bones example of how to create a library using Rollup, including importing a module from `node_modules` and converting it from CommonJS.
+### What does this library do?
 
-We're creating a library called `how-long-till-lunch`, which usefully tells us how long we have to wait until lunch, using the [ms](https://github.com/zeit/ms) package:
+In order to print a receipt on a receipt printer you need to build the receipt and encode it as in the ESC/POS or StarPRNT language. You can use the [`ThermalPrinterEncoder`](https://github.com/NielsLeenheer/ThermalPrinterEncoder) library for this. You end up with an array of raw bytes that needs to be send to the printer. One way to do that is using a direct USB connection using WebUSB.
 
-```js
-console.log('it will be lunchtime in ' + howLongTillLunch());
-```
+#### Unfortunately this does not work on Windows...
 
-## Getting started
+On most platforms you can directly talk to USB connected receipt printers using WebUSB. The main exception to this is on Windows where the printer driver exclusively claims the printer. On that platform the alternative way to print on receipt printers would be to use allow to driver to create a virtual serial port for the printer. Usually this is used for compatibility with old applications, but it also means you can use the WebSerialReceiptPrinter library instead.
 
-Clone this repository and install its dependencies:
 
-```bash
-git clone https://github.com/rollup/rollup-starter-lib
-cd rollup-starter-lib
-npm install
-```
+### How to use it?
 
-`npm run build` builds the library to `dist`, generating three files:
+Load the `webusb-receipt-printer.umd.js` file in the browser and instantiate a `WebHIDBarcodeScanner` object. 
 
-* `dist/how-long-till-lunch.cjs.js`
-    A CommonJS bundle, suitable for use in Node.js, that `require`s the external dependency. This corresponds to the `"main"` field in package.json
-* `dist/how-long-till-lunch.esm.js`
-    an ES module bundle, suitable for use in other people's libraries and applications, that `import`s the external dependency. This corresponds to the `"module"` field in package.json
-* `dist/how-long-till-lunch.umd.js`
-    a UMD build, suitable for use in any environment (including the browser, as a `<script>` tag), that includes the external dependency. This corresponds to the `"browser"` field in package.json
+    <script src='webusb-receipt-printer.umd.js></script>
 
-`npm run dev` builds the library, then keeps rebuilding it whenever the source files change using [rollup-watch](https://github.com/rollup/rollup-watch).
+    <script>
 
-`npm test` builds the library, then tests it.
+        const receiptPrinter = new WebUSBReceiptPrinter();
 
-## Variations
+    </script>
 
-* [babel](https://github.com/rollup/rollup-starter-lib/tree/babel) — illustrates writing the source code in ES2015 and transpiling it for older environments with [Babel](https://babeljs.io/)
-* [buble](https://github.com/rollup/rollup-starter-lib/tree/buble) — similar, but using [Bublé](https://buble.surge.sh/) which is a faster alternative with less configuration
-* [TypeScript](https://github.com/rollup/rollup-starter-lib/tree/typescript) — uses [TypeScript](https://www.typescriptlang.org/) for type-safe code and transpiling
+
+Or import the `webusb-receipt-printer.esm.js` module:
+
+    import WebHIDBarcodeScanner from 'webusb-receipt-printer.esm.js';
+
+    const receiptPrinter = new WebUSBReceiptPrinter();
 
 
 
-## License
+### Connect to a receipt printer
 
-[MIT](LICENSE).
+The first time you have to manually connect to the receipt printer by calling the `connect()` function. This function must be called as the result of an user action, for example clicking a button. You cannot call this function on page load.
+
+    function handleConnectButtonClick() {
+        receiptPrinter.connect();
+    }
+
+Subsequent times you can simply call the `reconnect()` function. You have to provide the serial number of a previously connected receipt printer in order to find the correct printer and connect to it again. It is recommended to call this button on page load to prevent having to manually connect to a previously connected device.
+
+    receiptPrinter.reconnect(lastUsedSerialNumber);
+
+If there are no receipt printers connected that have been previously connected, or the serial number does not match up, this function will do nothing.
+
+To find out when a receipt printer is connected you can listen for the `connected` event using the `addEventListener()` function.
+
+    receiptPrinter.addEventListener('connected', device => {
+        console.log(`Connected to ${device.manufacturerName} ${device.productName} (#${device.serialNumber})`);
+
+        printerLanguage = device.language;
+        printerCodepageMapping = device.codepageMapping;
+
+        /* Store device.serialNumber for reconnecting */
+        lastUsedSerialNumber = device.serialNumber;
+    });
+
+The callback of the `connected` event is passed an object with the following properties:
+
+-   `vendorId`<br>
+    The USB vendor ID.
+-   `productId`<br>
+    The USB product ID.
+-   `manufacturerName`<br>
+    The name of the manufacturer of the printer.
+-   `productName`<br>
+    The name of the receipt printer.
+-   `serialNumber`<br>
+    The serial number of the receipt printer. To be used to reconnect to the printer at a later time.
+-   `language`<br>
+    Language of the printer, which can be either `esc-pos` or `star-prnt`. This can be used as an option for `ThermalPrinterEncoder` to encode in the correct language for the printer.
+-   `codepageMapping`<br>
+    Code page mapping of the printer, which can be used as an option for `ThermalPrinterEncoder` to map non-ascii characters to the correct codepage supported by the printer. 
+
+
+### Printing receipts
+
+When you want to print a receipt, you can call the `print()` function with an array, or a typed array with bytes. The data must be properly encoded for the printer. 
+
+For example:
+
+    /* Encode the receipt */
+
+    let encoder = new ThermalPrinterEncoder({
+        language:  printerLanguage,
+        codepageMapping: printerCodepageMapping
+    });
+
+    let data = encoder
+        .initialize()
+        .text('The quick brown fox jumps over the lazy dog')
+        .newline()
+        .qrcode('https://nielsleenheer.com')
+        .encode();
+
+    /* Print the receipt */
+
+    receiptPrinter.print(data);
+
+
+### License
+
+MIT
+
