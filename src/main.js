@@ -112,9 +112,14 @@ class WebUSBReceiptPrinter {
 		}
 	}
 
-	async reconnect(serialNumber) {
+	async reconnect(previousDevice) {
 		let devices = await navigator.usb.getDevices();
-		let device = devices.find(device => device.serialNumber == serialNumber);
+		
+		let device = devices.find(device => device.serialNumber == previousDevice.serialNumber);
+
+		if (!device) {
+			device = devices.find(device => device.vendorId == previousDevice.vendorId && device.productId == previousDevice.productId);
+		}
 
 		if (device) {
 			await this.open(device);
