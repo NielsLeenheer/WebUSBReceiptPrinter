@@ -2,7 +2,7 @@ import EventEmitter from "./event-emitter.js";
 
 const DeviceProfiles = [
 
-	/* Generic USB receipt printer */
+	/* Zjiang ZJ-5805 */
 	{
 		filters: [
 			{ vendorId: 0x0416, productId: 0x5011 },
