@@ -68,7 +68,7 @@ const DeviceProfiles = [
 		endpoint:			2,
 
 		language:			'esc-pos',
-		codepageMapping:	'epson'
+		codepageMapping:	'citizen'
 	},
 			
 	/* Dtronic */
