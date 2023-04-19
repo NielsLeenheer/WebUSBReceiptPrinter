@@ -149,6 +149,19 @@ class WebUSBReceiptPrinter {
 			codepageMapping:	this._internal.profile.codepageMapping
 		});
 	}
+
+	async disconnect() {
+		if (!this._internal.device) {
+			return;
+		}
+
+		await this._internal.device.close();
+
+		this._internal.device = null;
+		this._internal.profile = null;
+
+		this._internal.emitter.emit('disconnected');
+	}
 	
 	async print(command) {
 		let endpoint = this._internal.profile.endpoint;
