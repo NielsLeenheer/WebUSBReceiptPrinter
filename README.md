@@ -8,14 +8,14 @@ In order to print a receipt on a receipt printer you need to build the receipt a
 
 #### Unfortunately this does not work on Windows...
 
-On most platforms you can directly talk to USB connected receipt printers using WebUSB. The main exception to this is on Windows where the printer driver exclusively claims the printer. On that platform the alternative way to print on receipt printers would be to use allow to driver to create a virtual serial port for the printer. Usually this is used for compatibility with old applications, but it also means you can use the WebSerialReceiptPrinter library instead.
+On most platforms you can directly talk to USB connected receipt printers using WebUSB. The main exception to this is on Windows where the printer driver exclusively claims the printer. On that platform the alternative way to print on receipt printers would be to use allow to driver to create a virtual serial port for the printer. Usually this is used for compatibility with old applications, but it also means you can use the `WebSerialReceiptPrinter` library instead.
 
 
 ### How to use it?
 
-Load the `webusb-receipt-printer.umd.js` file in the browser and instantiate a `WebHIDBarcodeScanner` object. 
+Load the `webusb-receipt-printer.umd.js` file in the browser and instantiate a `WebUSBReceiptPrinter` object. 
 
-    <script src='webusb-receipt-printer.umd.js></script>
+    <script src='webusb-receipt-printer.umd.js'></script>
 
     <script>
 
