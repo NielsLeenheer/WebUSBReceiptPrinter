@@ -95,6 +95,12 @@ class WebUSBReceiptPrinter {
             device:     null,
 			profile:	null
         }
+
+		navigator.usb.addEventListener('disconnect', event => {
+			if (this._internal.device == event.device) {
+				this._internal.emitter.emit('disconnected');
+			}
+		});
 	}
 
 	async connect() {
@@ -114,7 +120,7 @@ class WebUSBReceiptPrinter {
 
 	async reconnect(previousDevice) {
 		let devices = await navigator.usb.getDevices();
-		
+
 		let device = devices.find(device => device.serialNumber == previousDevice.serialNumber);
 
 		if (!device) {

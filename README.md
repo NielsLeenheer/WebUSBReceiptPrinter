@@ -40,9 +40,9 @@ The first time you have to manually connect to the receipt printer by calling th
         receiptPrinter.connect();
     }
 
-Subsequent times you can simply call the `reconnect()` function. You have to provide the serial number of a previously connected receipt printer in order to find the correct printer and connect to it again. It is recommended to call this button on page load to prevent having to manually connect to a previously connected device.
+Subsequent times you can simply call the `reconnect()` function. You have to provide an object with the serial number, vendor id and product id of the previously connected receipt printer in order to find the correct printer and connect to it again. You can get this data by listening to the `connected` event and store it for later use. It is recommended to call this button on page load to prevent having to manually connect to a previously connected device.
 
-    receiptPrinter.reconnect(lastUsedSerialNumber);
+    receiptPrinter.reconnect(lastUsedDevice);
 
 If there are no receipt printers connected that have been previously connected, or the serial number does not match up, this function will do nothing.
 
@@ -54,8 +54,8 @@ To find out when a receipt printer is connected you can listen for the `connecte
         printerLanguage = device.language;
         printerCodepageMapping = device.codepageMapping;
 
-        /* Store device.serialNumber for reconnecting */
-        lastUsedSerialNumber = device.serialNumber;
+        /* Store device for reconnecting */
+        lastUsedDevice = device;
     });
 
 The callback of the `connected` event is passed an object with the following properties:
