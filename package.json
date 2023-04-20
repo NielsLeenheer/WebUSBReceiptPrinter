@@ -1,7 +1,6 @@
 {
   "name": "webusb-receipt-printer",
   "version": "1.0.0",
-  "main": "dist/webusb-receipt-printer.cjs.js",
   "module": "dist/webusb-receipt-printer.esm.js",
   "browser": "dist/webusb-receipt-printer.umd.js",
   "devDependencies": {
