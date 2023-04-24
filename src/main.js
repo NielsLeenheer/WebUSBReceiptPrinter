@@ -135,11 +135,11 @@ class WebUSBReceiptPrinter {
 	async open(device) {
 		this._internal.device = device;
 
-		this._internal.profile = DeviceProfiles.filter(
-			item => item.filters.filter(
+		this._internal.profile = DeviceProfiles.find(
+			item => item.filters.some(
 				filter => filter.vendorId && filter.productId ? filter.vendorId == this._internal.device.vendorId && filter.productId == this._internal.device.productId : filter.vendorId == this._internal.device.vendorId
-			).length
-		).pop();
+			)
+		);
 
 		await this._internal.device.open();
 		await this._internal.device.selectConfiguration(this._internal.profile.configuration);
