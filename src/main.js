@@ -146,6 +146,7 @@ class WebUSBReceiptPrinter {
 		await this._internal.device.claimInterface(this._internal.profile.interface);
 		
 		this._internal.emitter.emit('connected', {
+			type:				'usb',
 			manufacturerName: 	this._internal.device.manufacturerName,
 			productName: 		this._internal.device.productName,
 			serialNumber: 		this._internal.device.serialNumber,
