@@ -7,7 +7,7 @@ export default [
 	{
 		input: 'src/main.js',
 		output: {
-			name: 'WebUsbReceiptPrinter',
+			name: 'WebUSBReceiptPrinter',
 			file: 'dist/webusb-receipt-printer.umd.js',
 			format: 'umd'
 		},
