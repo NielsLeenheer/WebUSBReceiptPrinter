@@ -83,6 +83,19 @@ const DeviceProfiles = [
 
 		language:			'esc-pos',
 		codepageMapping:	'epson'
+	},
+
+	/* Xprinter */
+	{
+		filters: [
+			{ vendorId: 0x1fc9, productId: 0x2016 },
+		],
+		
+		configuration:		1,
+		interface:			0,
+
+		language:			'esc-pos',
+		codepageMapping:	'xprinter'
 	}
 ]
 
