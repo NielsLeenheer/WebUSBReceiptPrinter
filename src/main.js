@@ -19,7 +19,7 @@ const DeviceProfiles = [
 	/* Samsung SRP */
 	{
 		filters: [
-			{ vendorId: 0x0419 }
+			{ vendorId: 0x0419 }, { vendorId: 0x1504 }
 		],
 		
 		configuration:		1,
