@@ -103,6 +103,7 @@ class WebUSBReceiptPrinter {
             device:     null,
 			profile:	null,
 			endpoints:	{
+				input:		null,
 				output:		null
 			}
         }
@@ -158,8 +159,10 @@ class WebUSBReceiptPrinter {
 		
 		let iface = this._internal.device.configuration.interfaces.find(i => i.interfaceNumber == this._internal.profile.interface);
 		this._internal.endpoints.output = iface.alternate.endpoints.find(e => e.direction == 'out');
+		this._internal.endpoints.input = iface.alternate.endpoints.find(e => e.direction == 'in');
 
-		
+		await this._internal.device.reset();
+
 		this._internal.emitter.emit('connected', {
 			type:				'usb',
 			manufacturerName: 	this._internal.device.manufacturerName,
@@ -170,6 +173,25 @@ class WebUSBReceiptPrinter {
 			language: 			this._internal.profile.language,
 			codepageMapping:	this._internal.profile.codepageMapping
 		});
+	}
+
+	async listen() {
+		if (!this._internal.device) {
+			return;
+		}
+
+		try {
+			const result = await this._internal.device.transferIn(this._internal.endpoints.input.endpointNumber, 64);
+
+			if (result instanceof USBInTransferResult) {
+				if (result.data.byteLength) {
+					this._internal.emitter.emit('data', result.data);
+				}
+			}
+
+			this.listen();
+		} catch(e) {
+		}
 	}
 
 	async disconnect() {
