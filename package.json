@@ -1,6 +1,6 @@
 {
   "name": "webusb-receipt-printer",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "exports": {
       "browser": {
