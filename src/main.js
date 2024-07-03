@@ -10,7 +10,6 @@ const DeviceProfiles = [
 		
 		configuration:		1,
 		interface:			0,
-		endpoint:			3,
 
 		language:			'esc-pos',
 		codepageMapping:	'zjiang'
@@ -24,7 +23,6 @@ const DeviceProfiles = [
 		
 		configuration:		1,
 		interface:			0,
-		endpoint:			1,
 
 		language:			'esc-pos',
 		codepageMapping:	'bixolon'
@@ -51,7 +49,6 @@ const DeviceProfiles = [
 		
 		configuration:		1,
 		interface:			0,
-		endpoint:			1,
 
 		language:			'esc-pos',
 		codepageMapping:	'epson'
@@ -65,7 +62,6 @@ const DeviceProfiles = [
 		
 		configuration:		1,
 		interface:			0,
-		endpoint:			2,
 
 		language:			'esc-pos',
 		codepageMapping:	'citizen'
@@ -79,7 +75,6 @@ const DeviceProfiles = [
 		
 		configuration:		1,
 		interface:			0,
-		endpoint:			2,
 
 		language:			'esc-pos',
 		codepageMapping:	'epson'
@@ -106,7 +101,10 @@ class WebUSBReceiptPrinter {
         this._internal = {
             emitter:    new EventEmitter(),
             device:     null,
-			profile:	null
+			profile:	null,
+			endpoints:	{
+				output:		null
+			}
         }
 
 		navigator.usb.addEventListener('disconnect', event => {
@@ -158,6 +156,10 @@ class WebUSBReceiptPrinter {
 		await this._internal.device.selectConfiguration(this._internal.profile.configuration);
 		await this._internal.device.claimInterface(this._internal.profile.interface);
 		
+		let iface = this._internal.device.configuration.interfaces.find(i => i.interfaceNumber == this._internal.profile.interface);
+		this._internal.endpoints.output = iface.alternate.endpoints.find(e => e.direction == 'out');
+
+		
 		this._internal.emitter.emit('connected', {
 			type:				'usb',
 			manufacturerName: 	this._internal.device.manufacturerName,
@@ -184,20 +186,9 @@ class WebUSBReceiptPrinter {
 	}
 	
 	async print(command) {
-		let endpoint = this._internal.profile.endpoint;
-		
-		if (!endpoint) {
-			let i = this._internal.device.configuration.interfaces.find(i => i.interfaceNumber == this._internal.profile.interface);
-			let e = i.alternate.endpoints.find(e => e.direction == 'out');
-
-			if (e) {
-				endpoint = e.endpointNumber;
-			}
-		}
-
-		if (endpoint) {
+		if (this._internal.device && this._internal.endpoints.output) {
 			try {
-				await this._internal.device.transferOut(endpoint, command);
+				await this._internal.device.transferOut(this._internal.endpoints.output.endpointNumber, command);
 			}
 			catch(e) {
 				console.log(e);
