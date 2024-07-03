@@ -26,7 +26,7 @@ Load the `webusb-receipt-printer.umd.js` file from the `dist` directory in the b
 
 Or import the `webusb-receipt-printer.esm.js` module:
 
-    import WebHIDBarcodeScanner from 'webusb-receipt-printer.esm.js';
+    import WebUSBReceiptPrinter from 'webusb-receipt-printer.esm.js';
 
     const receiptPrinter = new WebUSBReceiptPrinter();
 
