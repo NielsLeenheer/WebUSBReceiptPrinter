@@ -37,7 +37,73 @@ const DeviceProfiles = [
 		configuration:		1,
 		interface:			0,
 		
-		language:			'star-prnt',
+
+		/*
+			vendorId	productId	productName
+
+									FVP10				star-line
+			0x0519		0x0001		TSP650II			star-line
+									TSP650II SK			star-line
+									TSP700II			star-line
+									TSP800II			star-line
+									SP700				star-line
+			0x0519 		0x0003		TSP100IIU+			star-graphics
+									TSP100IIIU			star-graphics
+									TSP100IV			star-prnt
+									TSP100IV SK			star-prnt
+			0x0519		0x0017		mPOP				star-prnt
+			0x0519		0x0019		mC-Label3			star-prnt
+			0x0519		0x000b		BSC10				esc-pos
+			0x0519		0x0011		BSC10BR				esc-pos
+			0x0519		0x001b		BSC10II				esc-pos
+			0x0519		0x0043		SM-S230i			
+			0x0519		0x0047		mC-Print3			star-prnt
+			0x0519		0x0049		mC-Print2			star-prnt
+
+		*/
+
+		language:			device => {
+								let language = 'star-line';
+								let name = device.productName;
+
+								/* 
+									Even though the product names are a bit messy, the best way to distinguish between 
+									models is by the product name. It is not possible to do it by the productId alone, 
+									as the same productId is used for different models supporting different languages.
+
+									But we do need to normalize the names a bit, as they are not consistent.
+								*/
+								
+								name = name.replace(/^Star\s+/i, '');
+								name = name.replace(/^TSP(1|4|6|7|8|10)(13|43)(.*)?$/, (m, p1, p2, p3) => 'TSP' + p1 + '00' + (p3 || ''));
+								name = name.replace(/^TSP(55|65)(1|4)(.*)?$/, (m, p1, p2, p3) => 'TSP' + p1 + '0' + (p3 || ''));
+								name = name.replace(/^TSP([0-9]+)(II|III|IV|V|VI)?(.*)?$/, (m, p1, p2) => 'TSP' + p1 + (p2 || ''));
+
+								switch(name) {
+									case 'TSP100IV':
+									case 'mPOP':
+									case 'mC-Label3':
+									case 'mC-Print3':
+									case 'mC-Print2':
+										language = 'star-prnt';
+										break;
+
+									case 'TSP100':
+									case 'TSP100II':
+									case 'TSP100III':
+										language = 'star-graphics';
+										break;
+
+									case 'BSC10':
+									case 'BSC10BR':
+									case 'BSC10II':
+										language = 'esc-pos';
+										break;
+								}
+
+								return language;
+							},
+
 		codepageMapping:	'star'
 	},
 
@@ -158,10 +224,17 @@ class WebUSBReceiptPrinter {
 		await this._internal.device.claimInterface(this._internal.profile.interface);
 		
 		let iface = this._internal.device.configuration.interfaces.find(i => i.interfaceNumber == this._internal.profile.interface);
+
 		this._internal.endpoints.output = iface.alternate.endpoints.find(e => e.direction == 'out');
 		this._internal.endpoints.input = iface.alternate.endpoints.find(e => e.direction == 'in');
-
+		
 		await this._internal.device.reset();
+
+		let language = this._internal.profile.language;
+
+		if (typeof language == 'function') {
+			language = language(this._internal.device);
+		}
 
 		this._internal.emitter.emit('connected', {
 			type:				'usb',
@@ -170,7 +243,7 @@ class WebUSBReceiptPrinter {
 			serialNumber: 		this._internal.device.serialNumber,
 			vendorId: 			this._internal.device.vendorId,
 			productId: 			this._internal.device.productId,			
-			language: 			this._internal.profile.language,
+			language: 			language,
 			codepageMapping:	this._internal.profile.codepageMapping
 		});
 	}
