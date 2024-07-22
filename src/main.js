@@ -187,10 +187,12 @@ const DeviceProfiles = [
 	}
 ]
 
+class ReceiptPrinter {}
 
-class WebUSBReceiptPrinter {
+class WebUSBReceiptPrinter extends ReceiptPrinter {
 
 	constructor() {
+		super();
         this._internal = {
             emitter:    new EventEmitter(),
             device:     null,
