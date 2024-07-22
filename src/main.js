@@ -145,6 +145,20 @@ const DeviceProfiles = [
 		language:			'esc-pos',
 		codepageMapping:	'hp'
 	},
+
+	/* Fujitsu */
+
+	{
+		filters: [
+			{ vendorId: 0x04c5 },
+		],
+
+		configuration:		1,
+		interface:			0,
+
+		language:			'esc-pos',
+		codepageMapping:	'epson'
+	},
 			
 	/* Dtronic */
 	{
