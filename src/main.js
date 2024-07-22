@@ -191,21 +191,23 @@ class ReceiptPrinter {}
 
 class WebUSBReceiptPrinter extends ReceiptPrinter {
 
+	#emitter;
+	
+	#device = null;
+	#profile = null;
+	#endpoints = {
+		input:		null,
+		output:		null
+	};
+
 	constructor() {
 		super();
-        this._internal = {
-            emitter:    new EventEmitter(),
-            device:     null,
-			profile:	null,
-			endpoints:	{
-				input:		null,
-				output:		null
-			}
-        }
+
+		this.#emitter = new EventEmitter();
 
 		navigator.usb.addEventListener('disconnect', event => {
-			if (this._internal.device == event.device) {
-				this._internal.emitter.emit('disconnected');
+			if (this.#device == event.device) {
+				this.#emitter.emit('disconnected');
 			}
 		});
 	}
@@ -217,7 +219,7 @@ class WebUSBReceiptPrinter extends ReceiptPrinter {
 			});
 			
 			if (device) {
-				await this.open(device);
+				await this.#open(device);
 			}
 		}
 		catch(error) {
@@ -235,84 +237,93 @@ class WebUSBReceiptPrinter extends ReceiptPrinter {
 		}
 
 		if (device) {
-			await this.open(device);
+			await this.#open(device);
 		}
 	}
 
-	async open(device) {
-		this._internal.device = device;
+	async #open(device) {
+		this.#device = device;
 
-		this._internal.profile = DeviceProfiles.find(
+		this.#profile = DeviceProfiles.find(
 			item => item.filters.some(
-				filter => filter.vendorId && filter.productId ? filter.vendorId == this._internal.device.vendorId && filter.productId == this._internal.device.productId : filter.vendorId == this._internal.device.vendorId
+				filter => filter.vendorId && filter.productId ? filter.vendorId == this.#device.vendorId && filter.productId == this.#device.productId : filter.vendorId == this.#device.vendorId
 			)
 		);
 
-		await this._internal.device.open();
-		await this._internal.device.selectConfiguration(this._internal.profile.configuration);
-		await this._internal.device.claimInterface(this._internal.profile.interface);
+		await this.#device.open();
+		await this.#device.selectConfiguration(this.#profile.configuration);
+		await this.#device.claimInterface(this.#profile.interface);
 		
-		let iface = this._internal.device.configuration.interfaces.find(i => i.interfaceNumber == this._internal.profile.interface);
+		let iface = this.#device.configuration.interfaces.find(i => i.interfaceNumber == this.#profile.interface);
 
-		this._internal.endpoints.output = iface.alternate.endpoints.find(e => e.direction == 'out');
-		this._internal.endpoints.input = iface.alternate.endpoints.find(e => e.direction == 'in');
+		this.#endpoints.output = iface.alternate.endpoints.find(e => e.direction == 'out');
+		this.#endpoints.input = iface.alternate.endpoints.find(e => e.direction == 'in');
 		
-		await this._internal.device.reset();
+		await this.#device.reset();
 
-		let language = this._internal.profile.language;
-
-		if (typeof language == 'function') {
-			language = language(this._internal.device);
-		}
-
-		this._internal.emitter.emit('connected', {
+		this.#emitter.emit('connected', {
 			type:				'usb',
-			manufacturerName: 	this._internal.device.manufacturerName,
-			productName: 		this._internal.device.productName,
-			serialNumber: 		this._internal.device.serialNumber,
-			vendorId: 			this._internal.device.vendorId,
-			productId: 			this._internal.device.productId,			
-			language: 			language,
-			codepageMapping:	this._internal.profile.codepageMapping
+			manufacturerName: 	this.#device.manufacturerName,
+			productName: 		this.#device.productName,
+			serialNumber: 		this.#device.serialNumber,
+			vendorId: 			this.#device.vendorId,
+			productId: 			this.#device.productId,			
+			language: 			await this.#evaluate(this.#profile.language),
+			codepageMapping:	await this.#evaluate(this.#profile.codepageMapping)
 		});
 	}
 
+	async #evaluate(expression) {
+		if (typeof expression == 'function') {
+			return await expression(this.#device);
+		}
+
+		return expression;
+	}
+
 	async listen() {
-		if (!this._internal.device) {
+		if (this.#endpoints.input) {
+			this.#read();
+			return true;
+		}
+	}
+
+	async #read() {
+		if (!this.#device) {
 			return;
 		}
 
 		try {
-			const result = await this._internal.device.transferIn(this._internal.endpoints.input.endpointNumber, 64);
+			const result = await this.#device.transferIn(this.#endpoints.input.endpointNumber, 64);
 
 			if (result instanceof USBInTransferResult) {
 				if (result.data.byteLength) {
-					this._internal.emitter.emit('data', result.data);
+					this.#emitter.emit('data', result.data);
 				}
 			}
 
-			this.listen();
+			this.#read();
 		} catch(e) {
 		}
 	}
 
 	async disconnect() {
-		if (!this._internal.device) {
+		if (!this.#device) {
 			return;
 		}
 
-		await this._internal.device.close();
+		await this.#device.close();
 
-		this._internal.device = null;
-		this._internal.profile = null;
+		this.#device = null;
+		this.#profile = null;
 
-		this._internal.emitter.emit('disconnected');
+		this.#emitter.emit('disconnected');
 	}
 	
 	async print(command) {
-		if (this._internal.device && this._internal.endpoints.output) {
+		if (this.#device && this.#endpoints.output) {
 			try {
-				await this._internal.device.transferOut(this._internal.endpoints.output.endpointNumber, command);
+				await this.#device.transferOut(this.#endpoints.output.endpointNumber, command);
 			}
 			catch(e) {
 				console.log(e);
@@ -321,7 +332,7 @@ class WebUSBReceiptPrinter extends ReceiptPrinter {
 	}
 
 	addEventListener(n, f) {
-		this._internal.emitter.on(n, f);
+		this.#emitter.on(n, f);
 	}
 }
 
