@@ -132,6 +132,19 @@ const DeviceProfiles = [
 		language:			'esc-pos',
 		codepageMapping:	'citizen'
 	},
+
+	/* HP */
+	{
+		filters: [
+			{ vendorId: 0x05d9 },
+		],
+
+		configuration:		1,
+		interface:			0,
+
+		language:			'esc-pos',
+		codepageMapping:	'hp'
+	},
 			
 	/* Dtronic */
 	{
