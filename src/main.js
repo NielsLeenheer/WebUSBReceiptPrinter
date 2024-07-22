@@ -2,7 +2,20 @@ import EventEmitter from "./event-emitter.js";
 
 const DeviceProfiles = [
 
-	/* Zjiang ZJ-5805 */
+	/* POS-8022 and similar printers */
+	{
+		filters: [
+			{ vendorId: 0x0483, productId: 0x5743 },
+		],
+		
+		configuration:		1,
+		interface:			0,
+
+		language:			'esc-pos',
+		codepageMapping:	'default'
+	},
+			
+	/* POS-5805, POS-8360 and similar printers */
 	{
 		filters: [
 			{ vendorId: 0x0416, productId: 0x5011 },
