@@ -52,18 +52,17 @@ const DeviceProfiles = [
 		
 
 		/*
+
 			vendorId	productId	productName
 
 									FVP10				star-line
 			0x0519		0x0001		TSP650II			star-line
-									TSP650II SK			star-line
 									TSP700II			star-line
 									TSP800II			star-line
 									SP700				star-line
-			0x0519 		0x0003		TSP100IIU+			star-graphics
-									TSP100IIIU			star-graphics
+			0x0519 		0x0003		TSP100II			star-graphics
+									TSP100III			star-graphics
 									TSP100IV			star-prnt
-									TSP100IV SK			star-prnt
 			0x0519		0x0017		mPOP				star-prnt
 			0x0519		0x0019		mC-Label3			star-prnt
 			0x0519		0x000b		BSC10				esc-pos
@@ -85,6 +84,10 @@ const DeviceProfiles = [
 									as the same productId is used for different models supporting different languages.
 
 									But we do need to normalize the names a bit, as they are not consistent.
+
+									For example:	
+									TSP654 (STR_T-001) -> TSP650
+									Star TSP143IIIU -> TSP100III									
 								*/
 								
 								name = name.replace(/^Star\s+/i, '');
