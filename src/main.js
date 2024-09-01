@@ -28,6 +28,19 @@ const DeviceProfiles = [
 		codepageMapping:	'zjiang'
 	},
 			
+	/* MPT-II and similar printers */
+	{
+		filters: [
+			{ vendorId: 0x0483, productId: 0x5840 },
+		],
+		
+		configuration:		1,
+		interface:			0,
+
+		language:			'esc-pos',
+		codepageMapping:	'mpt'
+	},
+			
 	/* Samsung SRP */
 	{
 		filters: [
