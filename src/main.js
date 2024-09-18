@@ -216,9 +216,9 @@ const DeviceProfiles = [
 	}
 ]
 
-class ReceiptPrinter {}
+class ReceiptPrinterDriver {}
 
-class WebUSBReceiptPrinter extends ReceiptPrinter {
+class WebUSBReceiptPrinter extends ReceiptPrinterDriver {
 
 	#emitter;
 	
