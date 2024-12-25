@@ -291,7 +291,7 @@ class WebUSBReceiptPrinter extends ReceiptPrinterDriver {
 			this.#endpoints.output = iface.alternate.endpoints.find(e => e.direction == 'out');
 			this.#endpoints.input = iface.alternate.endpoints.find(e => e.direction == 'in');
 
-			await this.#device.reset();
+			// await this.#device.reset();
 
 			this.#emitter.emit('connected', {
 				type: 'usb',
