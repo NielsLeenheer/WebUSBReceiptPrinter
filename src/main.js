@@ -7,62 +7,62 @@ const DeviceProfiles = [
 		filters: [
 			{ vendorId: 0x0483, productId: 0x5743 },
 		],
-		
-		configuration:		1,
-		interface:			0,
 
-		language:			'esc-pos',
-		codepageMapping:	'default'
+		configuration: 1,
+		interface: 0,
+
+		language: 'esc-pos',
+		codepageMapping: 'default'
 	},
-			
+
 	/* POS-5805, POS-8360 and similar printers */
 	{
 		filters: [
 			{ vendorId: 0x0416, productId: 0x5011 },
 		],
-		
-		configuration:		1,
-		interface:			0,
 
-		language:			'esc-pos',
-		codepageMapping:	'zjiang'
+		configuration: 1,
+		interface: 0,
+
+		language: 'esc-pos',
+		codepageMapping: 'zjiang'
 	},
-			
+
 	/* MPT-II and similar printers */
 	{
 		filters: [
 			{ vendorId: 0x0483, productId: 0x5840 },
 		],
-		
-		configuration:		1,
-		interface:			0,
 
-		language:			'esc-pos',
-		codepageMapping:	'mpt'
+		configuration: 1,
+		interface: 0,
+
+		language: 'esc-pos',
+		codepageMapping: 'mpt'
 	},
-			
+
 	/* Samsung SRP */
 	{
 		filters: [
 			{ vendorId: 0x0419 }, { vendorId: 0x1504 }
 		],
-		
-		configuration:		1,
-		interface:			0,
 
-		language:			'esc-pos',
-		codepageMapping:	'bixolon'
+		configuration: 1,
+		interface: 0,
+
+		language: 'esc-pos',
+		codepageMapping: 'bixolon'
 	},
-			
+
 	/* Star */
 	{
 		filters: [
 			{ vendorId: 0x0519 }
 		],
-		
-		configuration:		1,
-		interface:			0,
-		
+
+		configuration: 1,
+		interface: 0,
+
 
 		/*
 
@@ -87,53 +87,53 @@ const DeviceProfiles = [
 
 		*/
 
-		language:			device => {
-								let language = 'star-line';
-								let name = device.productName;
+		language: device => {
+			let language = 'star-line';
+			let name = device.productName;
 
-								/* 
-									Even though the product names are a bit messy, the best way to distinguish between 
-									models is by the product name. It is not possible to do it by the productId alone, 
-									as the same productId is used for different models supporting different languages.
+			/* 
+				Even though the product names are a bit messy, the best way to distinguish between 
+				models is by the product name. It is not possible to do it by the productId alone, 
+				as the same productId is used for different models supporting different languages.
 
-									But we do need to normalize the names a bit, as they are not consistent.
+				But we do need to normalize the names a bit, as they are not consistent.
 
-									For example:	
-									TSP654 (STR_T-001) -> TSP650
-									Star TSP143IIIU -> TSP100III									
-								*/
-								
-								name = name.replace(/^Star\s+/i, '');
-								name = name.replace(/^TSP(1|4|6|7|8|10)(13|43)(.*)?$/, (m, p1, p2, p3) => 'TSP' + p1 + '00' + (p3 || ''));
-								name = name.replace(/^TSP(55|65)(1|4)(.*)?$/, (m, p1, p2, p3) => 'TSP' + p1 + '0' + (p3 || ''));
-								name = name.replace(/^TSP([0-9]+)(II|III|IV|V|VI)?(.*)?$/, (m, p1, p2) => 'TSP' + p1 + (p2 || ''));
+				For example:	
+				TSP654 (STR_T-001) -> TSP650
+				Star TSP143IIIU -> TSP100III									
+			*/
 
-								switch(name) {
-									case 'TSP100IV':
-									case 'mPOP':
-									case 'mC-Label3':
-									case 'mC-Print3':
-									case 'mC-Print2':
-										language = 'star-prnt';
-										break;
+			name = name.replace(/^Star\s+/i, '');
+			name = name.replace(/^TSP(1|4|6|7|8|10)(13|43)(.*)?$/, (m, p1, p2, p3) => 'TSP' + p1 + '00' + (p3 || ''));
+			name = name.replace(/^TSP(55|65)(1|4)(.*)?$/, (m, p1, p2, p3) => 'TSP' + p1 + '0' + (p3 || ''));
+			name = name.replace(/^TSP([0-9]+)(II|III|IV|V|VI)?(.*)?$/, (m, p1, p2) => 'TSP' + p1 + (p2 || ''));
 
-									case 'TSP100':
-									case 'TSP100II':
-									case 'TSP100III':
-										language = 'star-graphics';
-										break;
+			switch (name) {
+				case 'TSP100IV':
+				case 'mPOP':
+				case 'mC-Label3':
+				case 'mC-Print3':
+				case 'mC-Print2':
+					language = 'star-prnt';
+					break;
 
-									case 'BSC10':
-									case 'BSC10BR':
-									case 'BSC10II':
-										language = 'esc-pos';
-										break;
-								}
+				case 'TSP100':
+				case 'TSP100II':
+				case 'TSP100III':
+					language = 'star-graphics';
+					break;
 
-								return language;
-							},
+				case 'BSC10':
+				case 'BSC10BR':
+				case 'BSC10II':
+					language = 'esc-pos';
+					break;
+			}
 
-		codepageMapping:	'star'
+			return language;
+		},
+
+		codepageMapping: 'star'
 	},
 
 	/* Epson */
@@ -141,12 +141,12 @@ const DeviceProfiles = [
 		filters: [
 			{ vendorId: 0x04b8 },
 		],
-		
-		configuration:		1,
-		interface:			0,
 
-		language:			'esc-pos',
-		codepageMapping:	'epson'
+		configuration: 1,
+		interface: 0,
+
+		language: 'esc-pos',
+		codepageMapping: 'epson'
 	},
 
 	/* Citizen */
@@ -154,12 +154,12 @@ const DeviceProfiles = [
 		filters: [
 			{ vendorId: 0x1d90 },
 		],
-		
-		configuration:		1,
-		interface:			0,
 
-		language:			'esc-pos',
-		codepageMapping:	'citizen'
+		configuration: 1,
+		interface: 0,
+
+		language: 'esc-pos',
+		codepageMapping: 'citizen'
 	},
 
 	/* HP */
@@ -168,11 +168,11 @@ const DeviceProfiles = [
 			{ vendorId: 0x05d9 },
 		],
 
-		configuration:		1,
-		interface:			0,
+		configuration: 1,
+		interface: 0,
 
-		language:			'esc-pos',
-		codepageMapping:	'hp'
+		language: 'esc-pos',
+		codepageMapping: 'hp'
 	},
 
 	/* Fujitsu */
@@ -182,24 +182,24 @@ const DeviceProfiles = [
 			{ vendorId: 0x04c5 },
 		],
 
-		configuration:		1,
-		interface:			0,
+		configuration: 1,
+		interface: 0,
 
-		language:			'esc-pos',
-		codepageMapping:	'epson'
+		language: 'esc-pos',
+		codepageMapping: 'epson'
 	},
-			
+
 	/* Dtronic */
 	{
 		filters: [
 			{ vendorId: 0x0fe6, productId: 0x811e },
 		],
-		
-		configuration:		1,
-		interface:			0,
 
-		language:			'esc-pos',
-		codepageMapping:	'epson'
+		configuration: 1,
+		interface: 0,
+
+		language: 'esc-pos',
+		codepageMapping: 'epson'
 	},
 
 	/* Xprinter */
@@ -207,26 +207,26 @@ const DeviceProfiles = [
 		filters: [
 			{ vendorId: 0x1fc9, productId: 0x2016 },
 		],
-		
-		configuration:		1,
-		interface:			0,
 
-		language:			'esc-pos',
-		codepageMapping:	'xprinter'
+		configuration: 1,
+		interface: 0,
+
+		language: 'esc-pos',
+		codepageMapping: 'xprinter'
 	}
 ]
 
-class ReceiptPrinterDriver {}
+class ReceiptPrinterDriver { }
 
 class WebUSBReceiptPrinter extends ReceiptPrinterDriver {
 
 	#emitter;
-	
+
 	#device = null;
 	#profile = null;
 	#endpoints = {
-		input:		null,
-		output:		null
+		input: null,
+		output: null
 	};
 
 	constructor() {
@@ -243,16 +243,18 @@ class WebUSBReceiptPrinter extends ReceiptPrinterDriver {
 
 	async connect() {
 		try {
-			let device = await navigator.usb.requestDevice({ 
+			let device = await navigator.usb.requestDevice({
 				filters: DeviceProfiles.map(i => i.filters).reduce((a, b) => a.concat(b))
 			});
-			
+
 			if (device) {
-				await this.#open(device);
+				return await this.#open(device);
 			}
+			return false;
 		}
-		catch(error) {
+		catch (error) {
 			console.log('Could not connect! ' + error);
+			return false;
 		}
 	}
 
@@ -271,35 +273,41 @@ class WebUSBReceiptPrinter extends ReceiptPrinterDriver {
 	}
 
 	async #open(device) {
-		this.#device = device;
+		try {
+			this.#device = device;
 
-		this.#profile = DeviceProfiles.find(
-			item => item.filters.some(
-				filter => filter.vendorId && filter.productId ? filter.vendorId == this.#device.vendorId && filter.productId == this.#device.productId : filter.vendorId == this.#device.vendorId
-			)
-		);
+			this.#profile = DeviceProfiles.find(
+				item => item.filters.some(
+					filter => filter.vendorId && filter.productId ? filter.vendorId == this.#device.vendorId && filter.productId == this.#device.productId : filter.vendorId == this.#device.vendorId
+				)
+			);
 
-		await this.#device.open();
-		await this.#device.selectConfiguration(this.#profile.configuration);
-		await this.#device.claimInterface(this.#profile.interface);
-		
-		let iface = this.#device.configuration.interfaces.find(i => i.interfaceNumber == this.#profile.interface);
+			await this.#device.open();
+			await this.#device.selectConfiguration(this.#profile.configuration);
+			await this.#device.claimInterface(this.#profile.interface);
 
-		this.#endpoints.output = iface.alternate.endpoints.find(e => e.direction == 'out');
-		this.#endpoints.input = iface.alternate.endpoints.find(e => e.direction == 'in');
-		
-		await this.#device.reset();
+			let iface = this.#device.configuration.interfaces.find(i => i.interfaceNumber == this.#profile.interface);
 
-		this.#emitter.emit('connected', {
-			type:				'usb',
-			manufacturerName: 	this.#device.manufacturerName,
-			productName: 		this.#device.productName,
-			serialNumber: 		this.#device.serialNumber,
-			vendorId: 			this.#device.vendorId,
-			productId: 			this.#device.productId,			
-			language: 			await this.#evaluate(this.#profile.language),
-			codepageMapping:	await this.#evaluate(this.#profile.codepageMapping)
-		});
+			this.#endpoints.output = iface.alternate.endpoints.find(e => e.direction == 'out');
+			this.#endpoints.input = iface.alternate.endpoints.find(e => e.direction == 'in');
+
+			// await this.#device.reset();
+
+			this.#emitter.emit('connected', {
+				type: 'usb',
+				manufacturerName: this.#device.manufacturerName,
+				productName: this.#device.productName,
+				serialNumber: this.#device.serialNumber,
+				vendorId: this.#device.vendorId,
+				productId: this.#device.productId,
+				language: await this.#evaluate(this.#profile.language),
+				codepageMapping: await this.#evaluate(this.#profile.codepageMapping)
+			});
+			return true;
+		} catch (error) {
+			console.log('Could not open device! ' + error);
+			return false;
+		}
 	}
 
 	async #evaluate(expression) {
@@ -332,7 +340,7 @@ class WebUSBReceiptPrinter extends ReceiptPrinterDriver {
 			}
 
 			this.#read();
-		} catch(e) {
+		} catch (e) {
 		}
 	}
 
@@ -348,13 +356,13 @@ class WebUSBReceiptPrinter extends ReceiptPrinterDriver {
 
 		this.#emitter.emit('disconnected');
 	}
-	
+
 	async print(command) {
 		if (this.#device && this.#endpoints.output) {
 			try {
 				await this.#device.transferOut(this.#endpoints.output.endpointNumber, command);
 			}
-			catch(e) {
+			catch (e) {
 				console.log(e);
 			}
 		}
