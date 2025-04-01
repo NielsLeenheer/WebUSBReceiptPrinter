@@ -1,15 +1,19 @@
+type EventCallback = (...args: any[]) => void;
+
 class EventEmitter {
-    constructor(device) {
+    private _events: { [key: string]: EventCallback[] };
+
+    constructor() {
         this._events = {};
     }
 
-    on(e, f) {
+    on(e: string, f: EventCallback): void {
         this._events[e] = this._events[e] || [];
         this._events[e].push(f);
     }
 
-    emit(e, ...args) {
-        let fs = this._events[e];
+    emit(e: string, ...args: any[]): void {
+        const fs = this._events[e];
         if (fs) {
             fs.forEach(f => {
                 setTimeout(() => f(...args), 0);
