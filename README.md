@@ -156,6 +156,8 @@ receiptPrinter.addEventListener('connected', device => {
 
 Cutting the paper and opening the cash drawer work as usual, the driver translates them to the raster mode equivalents. On the TSP103 and TSP113, which have a tear bar instead of a cutter, a cut feeds the paper to the tear bar.
 
+The images the renderer produces are turned into Star Graphic mode commands by [`@point-of-sale/star-graphics-printer-encoder`](https://github.com/NielsLeenheer/StarGraphicsPrinterEncoder), which is a regular dependency of this library: it is tiny, it has no dependencies of its own and it is part of every bundle. Its README documents the raster mode commands that are used.
+
 ### Send the raster commands yourself
 
 Without the `renderer` option nothing changes: the `connected` event reports `star-graphics` as the language and no columns, and everything you pass to `print()` is sent to the printer unchanged. Speaking Star Graphic mode is then entirely up to your application.
@@ -163,6 +165,8 @@ Without the `renderer` option nothing changes: the `connected` event reports `st
 ```js
 const receiptPrinter = new WebUSBReceiptPrinter();
 ```
+
+If you want to build the raster commands yourself but would rather not write them out by hand, `@point-of-sale/star-graphics-printer-encoder` can be used on its own as well.
 
 ### Windows
 

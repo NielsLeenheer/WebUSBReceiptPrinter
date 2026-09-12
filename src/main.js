@@ -1,13 +1,19 @@
 import EventEmitter from "./event-emitter.js";
-import { wrap as starRaster } from "./wrappers/star-raster.js";
+import StarGraphicsPrinterEncoder from "@point-of-sale/star-graphics-printer-encoder";
 
 /*
 	Wrappers turn the items of a renderer into the wire format of a printer. A profile
-	that needs rendering names the wrapper it needs in its graphics section.
+	that needs rendering names the wrapper it needs in its graphics section. The wire
+	formats themselves live in their own packages, one encoder per protocol, and a
+	wrapper is the line that hands the items of the renderer to one of them.
 */
 
 const Wrappers = {
-	'star-raster':		starRaster
+	'star-raster':		(items, options) => new StarGraphicsPrinterEncoder({
+							tearBar:	options.tearBar,
+							quality:	options.quality,
+							pageLength:	options.pageLength
+						}).encode(items)
 };
 
 /*

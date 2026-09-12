@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { wrap } from '../src/wrappers/star-raster.js';
+import StarGraphicsPrinterEncoder from '@point-of-sale/star-graphics-printer-encoder';
 
 /*
 	The driver itself needs the WebUSB API, which no test runner has, so it is mocked
@@ -73,7 +73,7 @@ function install(productName) {
 	A stand in for the renderer package, which this repository does not depend on. The
 	class announces the languages it can encode, the instance is the one the driver asked
 	for with the language option. It ignores the bytes it is given and returns the same
-	items every time, so that the expected output of the wrapper is known.
+	items every time, so that the expected output of the encoder is known.
 */
 
 const items = [
@@ -104,15 +104,9 @@ class FakeRenderer {
 	}
 }
 
-/* The bytes the wrapper makes of those items, for a printer with a cutter */
+/* The bytes the encoder makes of those items, for a printer with a cutter */
 
-const wrapped = Array.from(wrap(items, {
-	language:	'star-prnt',
-	width:		576,
-	commands:	[ 'cut', 'pulse', 'feed' ],
-	wrapper:	'star-raster',
-	tearBar:	false
-}));
+const wrapped = Array.from(new StarGraphicsPrinterEncoder({ tearBar: false }).encode(items));
 
 function wait(ms) {
 	return new Promise(resolve => setTimeout(resolve, ms || 0));
@@ -208,7 +202,7 @@ describe('driver', () => {
 			});
 		});
 
-		it('should render the job and send the output of the wrapper', async () => {
+		it('should render the job and send the output of the encoder', async () => {
 			let state = install('Star TSP143IIIU');
 			let printer = new WebUSBReceiptPrinter({ renderer: FakeRenderer });
 
