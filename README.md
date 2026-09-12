@@ -48,7 +48,7 @@ import WebUSBReceiptPrinter from 'webusb-receipt-printer.esm.js';
 const receiptPrinter = new WebUSBReceiptPrinter();
 ```
 
-The constructor optionally takes an object with options. These are only needed for printers that can only print graphics, see [Star TSP100 series](#star-tsp100-series).
+The constructor optionally takes an object with options. These are only needed for printers that can only print graphics, such as the Star TSP100 series, and only when you want this library to render the receipt for you, see [Star TSP100 series](#star-tsp100-series).
 
 <br>
 
@@ -70,7 +70,7 @@ receiptPrinter.reconnect(lastUsedDevice);
 
 If there are no receipt printers connected that have been previously connected, or the serial number does not match up, this function will do nothing.
 
-The `connect()` function does not throw when something goes wrong, it logs the problem and does nothing. There is one exception: when the printer can only print graphics and the `renderer` option is missing or invalid, the returned promise is rejected with that error, because that is a mistake in your application and not something the user did. See [Star TSP100 series](#star-tsp100-series).
+The `connect()` function does not throw when something goes wrong, it logs the problem and does nothing. There is one exception: when the `renderer` option is not the renderer class and not a function that returns it, the returned promise is rejected with that error, because that is a mistake in your application and not something the user did. See [Star TSP100 series](#star-tsp100-series).
 
 To find out when a receipt printer is connected you can listen for the `connected` event using the `addEventListener()` function.
 
@@ -101,7 +101,7 @@ The callback of the `connected` event is passed an object with the following pro
 -   `serialNumber`<br>
     The serial number of the receipt printer. To be used to reconnect to the printer at a later time.
 -   `language`<br>
-    Language of the printer, which can be either `esc-pos` or `star-prnt`. This can be used as an option for `ReceiptPrinterEncoder` to encode in the correct language for the printer.
+    Language you have to encode your receipt in. Usually the language of the printer, such as `esc-pos`, `star-prnt` or `star-line`. For a printer that can only print graphics it is the language of the renderer when you passed one, and the raw protocol of the printer, such as `star-graphics`, when you did not. This can be used as an option for `ReceiptPrinterEncoder`.
 -   `codepageMapping`<br>
     Code page mapping of the printer, which can be used as an option for `ReceiptPrinterEncoder` to map non-ascii characters to the correct codepage supported by the printer. 
 -   `columns`<br>
@@ -113,13 +113,17 @@ The callback of the `connected` event is passed an object with the following pro
 
 The Star TSP100, TSP100ECO, TSP100GT, TSP100II and TSP100III have no fonts and no barcode engine. They only print images, which Star calls Star Graphic mode. The TSP100IV is not part of this group, it supports StarPRNT natively and needs nothing special.
 
+There are two ways to use them: you let this library render the receipt for you, or you send the raster commands yourself the way you always did.
+
+### Let this library render the receipt
+
 You can still use `ReceiptPrinterEncoder` the way you always do. You just have to give this library a renderer, which turns the encoded receipt into images before it is sent to the printer. The renderer lives in a separate package, [`@point-of-sale/receipt-printer-renderer`](https://github.com/NielsLeenheer/ReceiptPrinterRenderer), which you install yourself. It is an optional peer dependency, so it is only in your bundle when you actually use it.
 
 ```js
-import { EscPosRenderer } from '@point-of-sale/receipt-printer-renderer';
+import ReceiptPrinterRenderer from '@point-of-sale/receipt-printer-renderer';
 
 const receiptPrinter = new WebUSBReceiptPrinter({
-    renderer: EscPosRenderer
+    renderer: ReceiptPrinterRenderer
 });
 ```
 
@@ -127,18 +131,18 @@ With WebUSB you do not know beforehand which printer the user is going to pick, 
 
 ```js
 const receiptPrinter = new WebUSBReceiptPrinter({
-    renderer: () => import('@point-of-sale/receipt-printer-renderer').then(m => m.EscPosRenderer)
+    renderer: () => import('@point-of-sale/receipt-printer-renderer').then(m => m.default)
 });
 ```
 
 The constructor accepts the following options:
 
 -   `renderer`<br>
-    A renderer class, or a function that returns a renderer class, possibly as a promise. Required for printers that can only print graphics. When such a printer is connected without a renderer, connecting fails with an error.
+    The `ReceiptPrinterRenderer` class, or a function that returns it, possibly as a promise. Only needed for printers that can only print graphics, and only when you want this library to render the receipt for you.
 -   `rendererOptions`<br>
-    An object with additional options for the renderer, such as `maxHeight`. The `width`, `commands` and `codepageMapping` options belong to the printer and to the renderer and are always set by this library.
+    An object with additional options for the renderer, such as `maxHeight`. The `language`, `width`, `commands` and `codepageMapping` options belong to the printer and to the renderer and are always set by this library.
 
-The `connected` event reports the language and the code page mapping of the renderer, not of the printer, because that is the language you have to encode your receipt in. With the ESC/POS renderer you get `esc-pos` and `epson`. It also reports `columns`, which is 48 for these 80 mm printers.
+The `connected` event then reports the language and the code page mapping of the renderer, not of the printer, because that is the language you have to encode your receipt in. For these printers that is `star-prnt` and `star`. It also reports `columns`, which is 48 for these 80 mm printers.
 
 ```js
 receiptPrinter.addEventListener('connected', device => {
@@ -151,6 +155,14 @@ receiptPrinter.addEventListener('connected', device => {
 ```
 
 Cutting the paper and opening the cash drawer work as usual, the driver translates them to the raster mode equivalents. On the TSP103 and TSP113, which have a tear bar instead of a cutter, a cut feeds the paper to the tear bar.
+
+### Send the raster commands yourself
+
+Without the `renderer` option nothing changes: the `connected` event reports `star-graphics` as the language and no columns, and everything you pass to `print()` is sent to the printer unchanged. Speaking Star Graphic mode is then entirely up to your application.
+
+```js
+const receiptPrinter = new WebUSBReceiptPrinter();
+```
 
 ### Windows
 

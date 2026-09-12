@@ -17,13 +17,22 @@ const Wrappers = {
 
 const CodepageMappings = {
 	'esc-pos':			'epson',
-	'star-prnt':		'star'
+	'star-prnt':		'star',
+	'star-line':		'star'
 };
 
 /*
-	Thrown when a printer needs a renderer and the renderer option does not provide one.
-	Unlike the other things that can go wrong while connecting, this is a mistake in the
-	application, so connect() passes it on instead of logging it.
+	The settings of a graphics section that are passed on to the renderer when the profile
+	has them, next to the language, the width, the supported commands and the codepage
+	mapping, which it always has.
+*/
+
+const RendererSettings = [ 'maxHeight', 'feedThreshold' ];
+
+/*
+	Thrown when the renderer option is not a renderer. Unlike the other things that can go
+	wrong while connecting, this is a mistake in the application, so connect() passes it
+	on instead of logging it.
 */
 
 class RendererError extends Error {}
@@ -165,12 +174,18 @@ const DeviceProfiles = [
 
 		/*
 			The TSP100, TSP100II and TSP100III have no fonts and no barcode engine, they
-			only print images. When the language resolves to one of the keys below, the
-			driver renders the job and wraps the resulting images itself.
+			only print images. When the language resolves to one of the keys below and the
+			application passed a renderer, the driver renders the job and wraps the
+			resulting images itself.
+
+			The language of the section is the language the renderer has to encode, which
+			is the language the application encodes its receipt in. StarPRNT for these
+			printers, as they are Star printers and everything else about them is Star.
 		*/
 
 		graphics:			{
 								'star-graphics': {
+									language:	'star-prnt',
 									width:		576,
 									commands:	[ 'cut', 'pulse', 'feed' ],
 									wrapper:	'star-raster',
@@ -314,8 +329,8 @@ class WebUSBReceiptPrinter extends ReceiptPrinterDriver {
 			/*
 				Anything the user or the device does, such as cancelling the dialog or a
 				printer that another application already claimed, is logged and nothing
-				more, as it always has been. A problem with the renderer is a mistake in
-				the application, so that one is passed on to the caller.
+				more, as it always has been. A renderer option that is not a renderer is
+				a mistake in the application, so that one is passed on to the caller.
 			*/
 
 			if (error instanceof RendererError) {
@@ -353,13 +368,17 @@ class WebUSBReceiptPrinter extends ReceiptPrinterDriver {
 		let codepageMapping = await this.#evaluate(this.#profile.codepageMapping);
 
 		/*
-			A printer that can only print images. The renderer turns the bytes the
-			application sends into images, and the wrapper of the profile turns those
-			into commands the printer understands.
+			A printer that can only print images. When the application passed a renderer,
+			it turns the bytes the application sends into images, and the wrapper of the
+			profile turns those into commands the printer understands.
+
+			Without a renderer the driver does what it has always done: it reports the
+			language of the printer itself and passes the bytes of the application on
+			unchanged, which leaves it to the application to speak the raster protocol.
 
 			All of this depends on the profile and the product name only, both of which
-			are known before the device is opened, so it happens first. A missing or
-			invalid renderer option then never leaves the device half open.
+			are known before the device is opened, so it happens first. An invalid
+			renderer option then never leaves the device half open.
 		*/
 
 		let graphics = this.#profile.graphics ? this.#profile.graphics[language] : null;
@@ -369,36 +388,51 @@ class WebUSBReceiptPrinter extends ReceiptPrinterDriver {
 		this.#wrapper = null;
 
 		if (graphics) {
-			graphics = await this.#settings(graphics);
-
 			let Renderer = await this.#resolve(this.#options.renderer);
 
-			if (!Renderer) {
-				throw new RendererError('This printer only supports graphics, pass the renderer option with the EscPosRenderer or StarPrntRenderer class from @point-of-sale/receipt-printer-renderer');
+			if (Renderer) {
+				graphics = await this.#settings(graphics);
+
+				this.#wrapper = Wrappers[graphics.wrapper];
+
+				if (!this.#wrapper) {
+					throw new Error('The profile of this printer asks for the wrapper ' + graphics.wrapper + ', which does not exist');
+				}
+
+				/*
+					The language of a graphics printer is the language the profile asks
+					the renderer for, and the codepage mapping is the one that belongs to
+					that language. The width and the supported commands are those of the
+					printer, so they win over anything the application passed.
+				*/
+
+				codepageMapping = CodepageMappings[graphics.language] || codepageMapping;
+
+				let settings = {
+					language:			graphics.language,
+					width:				graphics.width,
+					commands:			graphics.commands,
+					codepageMapping:	codepageMapping
+				};
+
+				/*
+					The settings that shape the images belong to the printer as well, but
+					only when its profile has them. One that it does not set is left to the
+					rendererOptions of the application and to the default of the renderer,
+					rather than being overruled with an undefined.
+				*/
+
+				for (let key of RendererSettings) {
+					if (typeof graphics[key] != 'undefined') {
+						settings[key] = graphics[key];
+					}
+				}
+
+				this.#renderer = new Renderer(Object.assign({}, this.#options.rendererOptions, settings));
+				this.#graphics = graphics;
+
+				language = this.#renderer.language;
 			}
-
-			this.#wrapper = Wrappers[graphics.wrapper];
-
-			if (!this.#wrapper) {
-				throw new RendererError('The profile of this printer asks for the wrapper ' + graphics.wrapper + ', which does not exist');
-			}
-
-			/*
-				The language and the codepage mapping of a graphics printer are those of
-				the renderer. The width and the supported commands are those of the
-				printer, so they win over anything the application passed.
-			*/
-
-			language = Renderer.language;
-			codepageMapping = CodepageMappings[language] || codepageMapping;
-
-			this.#renderer = new Renderer(Object.assign({}, this.#options.rendererOptions, {
-				width:				graphics.width,
-				commands:			graphics.commands,
-				codepageMapping:	codepageMapping
-			}));
-
-			this.#graphics = graphics;
 		}
 
 		await this.#device.open();
@@ -424,13 +458,13 @@ class WebUSBReceiptPrinter extends ReceiptPrinterDriver {
 		};
 
 		/*
-			Only a graphics printer knows how many columns it has, it is the print width
+			Only a rendered printer knows how many columns it has, it is the print width
 			divided by the twelve dots of a font A character. For other printers the
 			application decides, as it always has.
 		*/
 
-		if (graphics) {
-			connected.columns = graphics.width / 12;
+		if (this.#graphics) {
+			connected.columns = this.#graphics.width / 12;
 		}
 
 		this.#emitter.emit('connected', connected);
@@ -442,23 +476,23 @@ class WebUSBReceiptPrinter extends ReceiptPrinterDriver {
 		}
 
 		/*
-			A renderer class is a function with a static language property. Any other
+			The renderer class is a function with a static languages array. Any other
 			function is a loader, which returns the class, possibly as a promise. A class
 			without that property is therefore called as a loader, which throws, so every
 			failure here is reported as the one error that explains the option.
 		*/
 
 		try {
-			if (typeof renderer == 'function' && typeof renderer.language != 'string') {
+			if (typeof renderer == 'function' && !Array.isArray(renderer.languages)) {
 				renderer = await renderer();
 			}
 
-			if (typeof renderer != 'function' || typeof renderer.language != 'string') {
+			if (typeof renderer != 'function' || !Array.isArray(renderer.languages)) {
 				throw new Error();
 			}
 		}
 		catch(error) {
-			throw new RendererError('The renderer option must be a renderer class, or a function that returns one');
+			throw new RendererError('The renderer option must be the ReceiptPrinterRenderer class, or a function that returns it');
 		}
 
 		return renderer;
@@ -530,9 +564,10 @@ class WebUSBReceiptPrinter extends ReceiptPrinterDriver {
 		if (this.#device && this.#endpoints.output) {
 			try {
 				/*
-					A graphics printer does not understand the language the application
-					encoded the receipt in, so the job is rendered to images first and
-					then wrapped in the format of the printer.
+					A graphics printer with a renderer does not understand the language
+					the application encoded the receipt in, so the job is rendered to
+					images first and then wrapped in the format of the printer. Without a
+					renderer the bytes go to the printer the way they always did.
 				*/
 
 				if (this.#graphics) {
