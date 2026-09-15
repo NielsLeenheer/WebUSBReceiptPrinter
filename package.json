@@ -12,7 +12,7 @@
   "module": "src/main.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/NielsLeenheer/WebUsbReceiptPrinter.git"
+    "url": "git+https://github.com/at-point-of-sale/WebUSBReceiptPrinter.git"
   },
   "keywords": [
     "usb",
@@ -26,9 +26,9 @@
   "author": "Niels Leenheer",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/NielsLeenheer/WebUsbReceiptPrinter/issues"
+    "url": "https://github.com/at-point-of-sale/WebUSBReceiptPrinter/issues"
   },
-  "homepage": "https://github.com/NielsLeenheer/WebUsbReceiptPrinter#readme",
+  "homepage": "https://github.com/at-point-of-sale/WebUSBReceiptPrinter#readme",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^24.1.0",
     "@rollup/plugin-node-resolve": "^15.0.2",

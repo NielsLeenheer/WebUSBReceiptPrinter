@@ -5,7 +5,7 @@ This is an library that allows you to print to a USB connected receipt printer u
 <br>
 
 [![npm](https://img.shields.io/npm/v/@point-of-sale/webusb-receipt-printer)](https://www.npmjs.com/@point-of-sale/webusb-receipt-printer)
-![GitHub License](https://img.shields.io/github/license/NielsLeenheer/WebUSBReceiptPrinter)
+![GitHub License](https://img.shields.io/github/license/at-point-of-sale/WebUSBReceiptPrinter)
 
 
 > This library is part of [@point-of-sale](https://point-of-sale.dev), a collection of libraries for interfacing browsers and Node with Point of Sale devices such as receipt printers, barcode scanners and customer facing displays.
@@ -14,7 +14,7 @@ This is an library that allows you to print to a USB connected receipt printer u
 
 ## What does this library do?
 
-In order to print a receipt on a receipt printer you need to build the receipt and encode it as in the ESC/POS or StarPRNT language. You can use the [`ReceiptPrinterEncoder`](https://github.com/NielsLeenheer/ReceiptPrinterEncoder) library for this. You end up with an array of raw bytes that needs to be send to the printer. One way to do that is using a direct USB connection using WebUSB.
+In order to print a receipt on a receipt printer you need to build the receipt and encode it as in the ESC/POS or StarPRNT language. You can use the [`ReceiptPrinterEncoder`](https://github.com/at-point-of-sale/ReceiptPrinterEncoder) library for this. You end up with an array of raw bytes that needs to be send to the printer. One way to do that is using a direct USB connection using WebUSB.
 
 ### Unfortunately this does not work on Windows...
 
@@ -117,7 +117,7 @@ There are two ways to use them: you let this library render the receipt for you,
 
 ### Let this library render the receipt
 
-You can still use `ReceiptPrinterEncoder` the way you always do. You just have to give this library a renderer, which turns the encoded receipt into images before it is sent to the printer. The renderer lives in a separate package, [`@point-of-sale/receipt-printer-renderer`](https://github.com/NielsLeenheer/ReceiptPrinterRenderer), which you install yourself. It is an optional peer dependency, so it is only in your bundle when you actually use it.
+You can still use `ReceiptPrinterEncoder` the way you always do. You just have to give this library a renderer, which turns the encoded receipt into images before it is sent to the printer. The renderer lives in a separate package, [`@point-of-sale/receipt-printer-renderer`](https://github.com/at-point-of-sale/ReceiptPrinterRenderer), which you install yourself. It is an optional peer dependency, so it is only in your bundle when you actually use it.
 
 ```js
 import ReceiptPrinterRenderer from '@point-of-sale/receipt-printer-renderer';
@@ -156,7 +156,7 @@ receiptPrinter.addEventListener('connected', device => {
 
 Cutting the paper and opening the cash drawer work as usual, the driver translates them to the raster mode equivalents. On the TSP103 and TSP113, which have a tear bar instead of a cutter, a cut feeds the paper to the tear bar.
 
-The images the renderer produces are turned into Star Graphic mode commands by [`@point-of-sale/star-graphics-printer-encoder`](https://github.com/NielsLeenheer/StarGraphicsPrinterEncoder), which is a regular dependency of this library: it is tiny, it has no dependencies of its own and it is part of every bundle. Its README documents the raster mode commands that are used.
+The images the renderer produces are turned into Star Graphic mode commands by [`@point-of-sale/star-graphics-printer-encoder`](https://github.com/at-point-of-sale/StarGraphicsPrinterEncoder), which is a regular dependency of this library: it is tiny, it has no dependencies of its own and it is part of every bundle. Its README documents the raster mode commands that are used.
 
 ### Send the raster commands yourself
 
